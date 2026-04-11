@@ -3,7 +3,7 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "phantom"
+name = "phantom-ai"
 version = "0.1.0"
 description = "Sandboxed data analysis with LLMs, powered by DuckDB"
 readme = "README.md"
@@ -26,6 +26,11 @@ classifiers = [
     "Topic :: Scientific/Engineering",
     "Typing :: Typed",
 ]
+
+[project.urls]
+Homepage = "https://github.com/James-Wirth/phantom"
+Repository = "https://github.com/James-Wirth/phantom"
+Issues = "https://github.com/James-Wirth/phantom/issues"
 
 [project.optional-dependencies]
 anthropic = ["anthropic>=0.40"]
