@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "phantom-ai"
-version = "0.1.0"
+version = "0.1.1"
 description = "Sandboxed data analysis with LLMs, powered by DuckDB"
 readme = "README.md"
 license = "MIT"
