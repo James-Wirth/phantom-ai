@@ -28,9 +28,9 @@ classifiers = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/James-Wirth/phantom"
-Repository = "https://github.com/James-Wirth/phantom"
-Issues = "https://github.com/James-Wirth/phantom/issues"
+Homepage = "https://github.com/James-Wirth/phantom-ai"
+Repository = "https://github.com/James-Wirth/phantom-ai"
+Issues = "https://github.com/James-Wirth/phantom-ai/issues"
 
 [project.optional-dependencies]
 anthropic = ["anthropic>=0.40"]

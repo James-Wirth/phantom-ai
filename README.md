@@ -1,12 +1,12 @@
 <h1>
 <p align="center">
-  <img src="https://raw.githubusercontent.com/James-Wirth/phantom/main/assets/logo.png" alt="Phantom" width="80">
+  <img src="https://raw.githubusercontent.com/James-Wirth/phantom-ai/main/assets/logo.png" alt="Phantom" width="80">
   <br>phantom
 </h1>
   <p align="center">
     Sandboxed data analysis with LLMs (powered by DuckDB).
     <br><br>
-    <a href="https://github.com/James-Wirth/phantom/actions/workflows/ci.yml"><img src="https://github.com/James-Wirth/phantom/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
+    <a href="https://github.com/James-Wirth/phantom-ai/actions/workflows/ci.yml"><img src="https://github.com/James-Wirth/phantom-ai/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
     <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="License"></a>
   </p>
 </p>
