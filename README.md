@@ -16,7 +16,7 @@ Phantom is a Python framework for LLM-assisted data analysis. The LLM doesn't ne
 ## Quick Start
 
 ```bash
-pip install git+https://github.com/James-Wirth/phantom.git
+pip install phantom-ai
 ```
 
 ```python
@@ -76,9 +76,9 @@ Claude's answer (abridged):
 Built-in support for **Anthropic**, **OpenAI**, and **Google Gemini**:
 
 ```bash
-pip install "phantom[anthropic]"
-pip install "phantom[openai]"
-pip install "phantom[google]"
+pip install "phantom-ai[anthropic]"
+pip install "phantom-ai[openai]"
+pip install "phantom-ai[google]"
 ```
 
 ```python
