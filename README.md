@@ -1,6 +1,6 @@
 <h1>
 <p align="center">
-  <img src="assets/logo.svg" alt="Phantom" width="80">
+  <img src="https://raw.githubusercontent.com/James-Wirth/phantom/main/assets/logo.png" alt="Phantom" width="80">
   <br>phantom
 </h1>
   <p align="center">
