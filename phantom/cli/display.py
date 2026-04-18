@@ -11,6 +11,7 @@ from rich import box
 from rich.console import Console
 from rich.markdown import Markdown
 from rich.status import Status
+from rich.padding import Padding
 from rich.syntax import Syntax
 from rich.table import Table
 from rich.text import Text
@@ -177,24 +178,63 @@ class DisplayManager:
         self._resume_spinner()
 
     def _show_schema_table(self, schema: dict[str, Any]) -> None:
-        """Render a compact schema table showing column names and types."""
+        """Render a transposed schema table (columns shown horizontally)."""
         columns: dict[str, str] = schema.get("columns", {})
         if not columns:
             return
 
+        indent = 4
+        available_width = self.console.width - indent
+        col_items = list(columns.items())
+
+        col_widths: list[int] = []
+        for name, dtype in col_items:
+            col_widths.append(max(len(name), len(dtype)) + 3)
+
+        total = 1
+        fit_count = 0
+        for w in col_widths:
+            if total + w > available_width:
+                break
+            total += w
+            fit_count += 1
+
+        fit_count = max(1, fit_count)
+        truncated = fit_count < len(col_items)
+        display_items = col_items[:fit_count]
+
+        if truncated and fit_count > 1:
+            overflow_label = f"+{len(col_items) - fit_count}"
+            overflow_width = len(overflow_label) + 3
+            while fit_count > 1 and total + overflow_width > available_width:
+                fit_count -= 1
+                total -= col_widths[fit_count]
+            overflow_label = f"+{len(col_items) - fit_count}"
+            display_items = col_items[:fit_count]
+
         table = Table(
-            show_header=True,
-            header_style="bold",
+            show_header=False,
             border_style="dim",
             box=box.ROUNDED,
             padding=(0, 1),
             pad_edge=False,
+            width=available_width,
         )
-        table.add_column("Column", style="cyan")
-        table.add_column("Type", style="dim")
 
-        for col_name, col_type in columns.items():
-            table.add_row(col_name, col_type)
+        for _ in display_items:
+            table.add_column()
+        if truncated:
+            table.add_column()
+
+        names: list[Text] = [Text(n, style="cyan") for n, _ in display_items]
+        if truncated:
+            names.append(Text(f"… {overflow_label}", style="dim"))
+        table.add_row(*names)
+
+        types: list[Text] = [Text(t, style="dim") for _, t in display_items]
+        if truncated:
+            types.append(Text(""))
+        table.add_row(*types)
 
         row_count = schema.get("row_count")
         footer = f"{len(columns)} columns"
@@ -202,7 +242,7 @@ class DisplayManager:
             footer = f"{row_count:,} rows · {footer}"
 
         self.console.print()
-        self.console.print(table, justify="left")
+        self.console.print(Padding(table, (0, 0, 0, indent)))
         self.console.print(f"    [dim]{footer}[/dim]")
 
     def show_response(self, response: ChatResponse) -> None:
