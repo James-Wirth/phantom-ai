@@ -2,14 +2,25 @@
 
 from __future__ import annotations
 
+import datetime
 import json
 from dataclasses import dataclass
+from decimal import Decimal
 from typing import TYPE_CHECKING, Any
 
 from ._ref import Ref
 
 if TYPE_CHECKING:
     from ._errors import ResolutionError
+
+
+def _json_default(obj: object) -> Any:
+    """Handle non-standard types that appear in DuckDB results."""
+    if isinstance(obj, (datetime.date, datetime.datetime)):
+        return obj.isoformat()
+    if isinstance(obj, Decimal):
+        return float(obj)
+    raise TypeError(f"Object of type {type(obj).__name__} is not JSON serializable")
 
 
 @dataclass
@@ -41,7 +52,7 @@ class ToolResult:
 
     def to_json(self) -> str:
         """Serialize to JSON string for LLM consumption."""
-        return json.dumps(self.data)
+        return json.dumps(self.data, default=_json_default)
 
     @classmethod
     def from_ref(cls, ref: Ref[Any]) -> ToolResult:
