@@ -10,8 +10,8 @@ from typing import TYPE_CHECKING, Any
 from rich import box
 from rich.console import Console
 from rich.markdown import Markdown
-from rich.status import Status
 from rich.padding import Padding
+from rich.status import Status
 from rich.syntax import Syntax
 from rich.table import Table
 from rich.text import Text
@@ -217,14 +217,14 @@ class DisplayManager:
             border_style="dim",
             box=box.ROUNDED,
             padding=(0, 1),
-            pad_edge=False,
+            pad_edge=True,
             width=available_width,
         )
 
         for _ in display_items:
-            table.add_column()
+            table.add_column(ratio=1)
         if truncated:
-            table.add_column()
+            table.add_column(ratio=1)
 
         names: list[Text] = [Text(n, style="cyan") for n, _ in display_items]
         if truncated:

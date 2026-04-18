@@ -21,6 +21,6 @@ Sleep 1s
 Type "Find the top 5 most Earth-like planets in this dataset (keep your answer short)."
 Sleep 500ms
 Enter
-Sleep 35s
+Sleep 25s
 
 Sleep 5s

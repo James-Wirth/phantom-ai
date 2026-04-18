@@ -28,3 +28,10 @@ htmlcov/
 
 # Dev 
 TODO.md
+.env
+.env.example
+sample_data/
+examples/
+
+# Assets hosted externally
+assets/demo.gif
