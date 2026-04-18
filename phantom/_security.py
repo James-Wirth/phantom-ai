@@ -20,6 +20,8 @@ from abc import ABC, abstractmethod
 from pathlib import Path
 from typing import Any
 
+from ._paths import resolve_path
+
 DEFAULT_DENY_PATTERNS: list[str] = [
     "*.env",
     ".git",
@@ -112,19 +114,22 @@ class PathGuard(Guard):
         deny_patterns: list[str] | None = None,
         *,
         allowed_paths: list[str | Path] | None = None,
+        base_dir: Path | None = None,
     ) -> None:
         self._allowed_dirs = (
-            [Path(d).resolve() for d in allowed_dirs] if allowed_dirs else []
+            [resolve_path(d, relative_to=base_dir) for d in allowed_dirs]
+            if allowed_dirs else []
         )
         self._allowed_paths = (
-            {Path(p).resolve() for p in allowed_paths} if allowed_paths else set()
+            {resolve_path(p, relative_to=base_dir) for p in allowed_paths}
+            if allowed_paths else set()
         )
         self._deny = deny_patterns or []
         self._has_restrictions = bool(self._allowed_dirs or self._allowed_paths)
 
     def check(self, value: Any, *, op_name: str, arg_name: str) -> None:
         try:
-            resolved = Path(value).resolve()
+            resolved = resolve_path(value)
         except (TypeError, OSError) as exc:
             raise SecurityError(
                 f"Invalid path: {exc}",

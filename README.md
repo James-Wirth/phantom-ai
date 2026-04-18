@@ -23,14 +23,14 @@ pip install phantom-ai
 import os
 import phantom
 
-session = phantom.Session(allowed_dirs=["./data"])
+session = phantom.Session(data_dir="~/data/exoplanets")
 
 chat = phantom.Chat(
     session,
     provider="anthropic",
     api_key=os.environ["ANTHROPIC_API_KEY"],
     model="claude-sonnet-4-20250514",
-    system="You are an astrophysicist. Data files are in ./data/.",
+    system="You are an astrophysicist.",
 )
 
 response = chat.ask(

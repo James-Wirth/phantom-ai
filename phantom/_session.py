@@ -74,6 +74,8 @@ class Session:
         secure: bool = True,
         allowed_dirs: list[str | Path] | None = None,
         allowed_paths: list[str | Path] | None = None,
+        data_dir: str | Path | None = None,
+        base_dir: str | Path | None = None,
         max_file_bytes: int = 50_000_000,
         output_format: str = "relation",
     ):
@@ -94,10 +96,29 @@ class Session:
             allowed_dirs: Directories the built-in data operations may read
                 from.  When ``None``, no directory restriction is applied.
             allowed_paths: Specific file paths the data operations may access.
+            data_dir: Convenience shorthand for a single allowed directory.
+                Equivalent to ``allowed_dirs=[data_dir]``.  Can be combined
+                with *allowed_dirs* (prepended to the list).  Supports ``~``
+                and ``$ENV_VAR`` expansion.
+            base_dir: Anchor directory for resolving relative paths in
+                *allowed_dirs*, *allowed_paths*, and *data_dir*.  When
+                ``None``, relative paths resolve against the current working
+                directory.  A common pattern for script-relative paths::
+
+                    Session(data_dir="./data", base_dir=Path(__file__).parent)
+
             max_file_bytes: Maximum file size for read operations (default 50 MB).
             output_format: Default output format for the export operation.
                 Options: "relation", "pandas", "polars", "arrow", "tuples", "dicts".
         """
+        # Merge data_dir into allowed_dirs
+        if data_dir is not None:
+            if allowed_dirs is None:
+                allowed_dirs = []
+            allowed_dirs = [data_dir] + list(allowed_dirs)
+
+        resolved_base_dir = Path(base_dir) if base_dir is not None else None
+
         self.id = session_id or f"session_{uuid.uuid4().hex[:8]}"
         self._refs: dict[str, Ref[Any]] = {}
         self._value_cache = LRUCache(
@@ -132,6 +153,7 @@ class Session:
             allowed_paths=allowed_paths,
             max_file_bytes=max_file_bytes,
             output_format=output_format,
+            base_dir=resolved_base_dir,
         )
         self._data_engine.register_into(self)
 

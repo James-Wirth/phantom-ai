@@ -16,7 +16,7 @@ if TYPE_CHECKING:
 
 def _json_default(obj: object) -> Any:
     """Handle non-standard types that appear in DuckDB results."""
-    if isinstance(obj, (datetime.date, datetime.datetime)):
+    if isinstance(obj, datetime.date | datetime.datetime):
         return obj.isoformat()
     if isinstance(obj, Decimal):
         return float(obj)

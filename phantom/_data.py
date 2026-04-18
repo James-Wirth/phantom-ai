@@ -13,6 +13,7 @@ from typing import TYPE_CHECKING, Any
 
 import duckdb
 
+from ._paths import resolve_path
 from ._security import (
     DEFAULT_DENY_PATTERNS,
     FileSizeGuard,
@@ -85,6 +86,7 @@ def _secure_connect(
     *,
     allowed_dirs: list[str | Path] | None = None,
     allowed_paths: list[str | Path] | None = None,
+    base_dir: Path | None = None,
 ) -> DuckDBPyConnection:
     """Create a hardened in-memory DuckDB connection.
 
@@ -103,10 +105,10 @@ def _secure_connect(
     conn = duckdb.connect(database=":memory:", config=config)
 
     if allowed_dirs:
-        dirs = [str(Path(d).resolve()) for d in allowed_dirs]
+        dirs = [str(resolve_path(d, relative_to=base_dir)) for d in allowed_dirs]
         conn.execute("SET allowed_directories = $dirs", {"dirs": dirs})
     if allowed_paths:
-        paths = [str(Path(p).resolve()) for p in allowed_paths]
+        paths = [str(resolve_path(p, relative_to=base_dir)) for p in allowed_paths]
         conn.execute("SET allowed_paths = $paths", {"paths": paths})
 
     conn.execute("SET lock_configuration = true")
@@ -119,13 +121,15 @@ def _data_policy(
     allowed_paths: list[str | Path] | None = None,
     deny_patterns: list[str] | None = None,
     max_file_bytes: int = 50_000_000,
+    base_dir: Path | None = None,
 ) -> SecurityPolicy:
     """Build the security policy for built-in data operations."""
     if deny_patterns is None:
         deny_patterns = list(DEFAULT_DENY_PATTERNS)
 
     path_guard = PathGuard(
-        allowed_dirs, deny_patterns=deny_patterns, allowed_paths=allowed_paths
+        allowed_dirs, deny_patterns=deny_patterns, allowed_paths=allowed_paths,
+        base_dir=base_dir,
     )
     policy = SecurityPolicy()
     policy.bind(path_guard, ops=_IO_OPS, args=["path"])
@@ -162,11 +166,13 @@ class _DataEngine:
         allowed_paths: list[str | Path] | None = None,
         max_file_bytes: int = 50_000_000,
         output_format: str = "relation",
+        base_dir: Path | None = None,
     ) -> None:
         self._allowed_dirs = allowed_dirs
         self._allowed_paths = allowed_paths
         self._max_file_bytes = max_file_bytes
         self._output_format = output_format
+        self._base_dir = base_dir
         self._conn: DuckDBPyConnection | None = None
 
     @property
@@ -176,6 +182,7 @@ class _DataEngine:
             self._conn = _secure_connect(
                 allowed_dirs=self._allowed_dirs,
                 allowed_paths=self._allowed_paths,
+                base_dir=self._base_dir,
             )
         return self._conn
 
@@ -271,6 +278,7 @@ class _DataEngine:
             self._allowed_dirs,
             allowed_paths=self._allowed_paths,
             max_file_bytes=self._max_file_bytes,
+            base_dir=self._base_dir,
         )
         if session._auto_merge:
             if session._policy is None:

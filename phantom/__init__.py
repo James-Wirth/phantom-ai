@@ -1,41 +1,41 @@
 """
-Phantom - The semantic-concrete bridge for LLM data pipelines.
+Phantom - Sandboxed data analysis with LLMs (powered by DuckDB).
 
-Phantom uses session-scoped operations for isolation and concurrency safety.
+Sessions come with built-in operations (read_csv, read_parquet, read_json,
+query, export) that run in a sandboxed DuckDB engine. You can extend them
+with custom operations via ``@session.op``.
 
-Example:
+Paths support ``~``, ``$ENV_VAR``, and optional ``base_dir`` anchoring::
+
+    session = phantom.Session(data_dir="~/data/sales")
+    session = phantom.Session(data_dir="$DATA_DIR")
+    session = phantom.Session(data_dir="./data", base_dir=Path(__file__).parent)
+
+Example — query with refs::
+
     import phantom
 
-    # Create a session
-    session = phantom.Session()
+    session = phantom.Session(data_dir="~/data")
 
-    # Register operations with @session.op
-    @session.op
-    def load(source: str) -> pd.DataFrame:
-        return pd.read_parquet(source)
+    # Load data (lazy — nothing executes yet)
+    orders = session.ref("read_csv", path="~/data/orders.csv")
+    customers = session.ref("read_csv", path="~/data/customers.csv")
 
-    @session.op
-    def filter(data: pd.DataFrame, condition: str) -> pd.DataFrame:
-        return data.query(condition)
+    # The refs dict maps alias -> ref; each alias becomes a SQL table name
+    result = session.ref(
+        "query",
+        sql="SELECT c.name, SUM(o.amount) AS total "
+            "FROM orders o JOIN customers c ON o.customer_id = c.id "
+            "GROUP BY c.name ORDER BY total DESC",
+        refs={"orders": orders, "customers": customers},
+    )
 
-    # Register custom inspectors with @session.inspector
-    @session.inspector(pd.DataFrame)
-    def inspect_df(df):
-        return {"shape": list(df.shape), "columns": list(df.columns)}
+    # Resolve executes the full graph
+    table = session.resolve(result)
 
-    # Create refs (lazy - nothing executes yet)
-    sales = session.ref("load", source="sales.parquet")
-    filtered = session.ref("filter", data=sales, condition="amount > 100")
-
-    # Resolve when needed
-    df = session.resolve(filtered)
-
-    # Get tools for LLM integration
-    tools = session.get_tools()
-
-    # Save and load graphs
-    session.save_graph(filtered, "pipeline.json")
-    loaded = session.load_graph("pipeline.json")
+    # Or use phantom.Chat for LLM-driven analysis
+    chat = phantom.Chat(session, provider="anthropic", model="claude-sonnet-4-20250514")
+    response = chat.ask("Who are the top customers by revenue?")
 """
 
 from importlib.metadata import PackageNotFoundError, version
@@ -48,6 +48,7 @@ except PackageNotFoundError:
 from ._chat import Chat, ChatResponse
 from ._errors import CycleError, MaxTurnsError, ResolutionError, TypeValidationError
 from ._operation_set import OperationSet
+from ._paths import resolve_path
 from ._providers import (
     AnthropicProvider,
     CallOptions,
@@ -93,6 +94,8 @@ __all__ = [
     "ProviderToolCall",
     "get_provider",
     "register_provider",
+    # Paths
+    "resolve_path",
     # Security
     "DEFAULT_DENY_PATTERNS",
     "SecurityError",
