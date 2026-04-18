@@ -196,7 +196,7 @@ def get_tools(
         # Anthropic format
         tools = session.get_tools(format="anthropic")
         response = anthropic.messages.create(
-            model="claude-sonnet-4-20250514",
+            model="claude-sonnet-4-6",
             messages=messages,
             tools=tools,
         )

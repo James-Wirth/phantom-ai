@@ -183,7 +183,7 @@ class AnthropicProvider:
         return session.get_tools(format="anthropic")
 
     def default_model(self) -> str:
-        return "claude-sonnet-4-20250514"
+        return "claude-sonnet-4-6"
 
     def call(self, options: CallOptions) -> ProviderResponse:
         kwargs: dict[str, Any] = {

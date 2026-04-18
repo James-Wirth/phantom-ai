@@ -13,6 +13,10 @@
 
 Phantom is a Python framework for LLM-assisted data analysis. The LLM doesn't need to see the actual data. Phantom reasons with opaque **semantic references** (`@a3f2`), writes SQL, and executes the queries locally in a sandboxed [DuckDB](https://duckdb.org/) engine.
 
+<p align="center">
+  <img src="assets/demo.gif" alt="Phantom CLI demo" width="100%">
+</p>
+
 ## Quick Start
 
 ```bash
@@ -29,7 +33,7 @@ chat = phantom.Chat(
     session,
     provider="anthropic",
     api_key=os.environ["ANTHROPIC_API_KEY"],
-    model="claude-sonnet-4-20250514",
+    model="claude-sonnet-4-6",
     system="You are an astrophysicist.",
 )
 
@@ -69,7 +73,10 @@ Claude's answer (abridged):
 > | Proxima Cen b | 4.2 ly | Proxima Cen | M-dwarf (3,042 K) |
 > | Ross 128 b | 11 ly | Ross 128 | M-dwarf (3,192 K) |
 > | Teegarden b | 12 ly | Teegarden | M-dwarf (2,904 K) |
+> | GJ 667 Cc | 24 ly | GJ 667 C | M-dwarf (3,350 K) |
 > | TRAPPIST-1 e/f/g | 40 ly | TRAPPIST-1 | M-dwarf (2,566 K) |
+> | LHS 1140 b | 41 ly | LHS 1140 | M-dwarf (3,216 K) |
+> | HD 40307 g | 42 ly | HD 40307 | K-dwarf (4,977 K) |
 >
 > The nearest habitable-zone candidates overwhelmingly orbit **M-dwarf** stars — small, cool, and the most common type in the galaxy.
 
@@ -88,7 +95,7 @@ chat = phantom.Chat(
     session,
     provider="anthropic",
     api_key=os.environ["ANTHROPIC_API_KEY"],
-    model="claude-sonnet-4-20250514",
+    model="claude-sonnet-4-6",
 )
 chat = phantom.Chat(
     session,

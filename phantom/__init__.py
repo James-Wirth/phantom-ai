@@ -34,14 +34,14 @@ Example — query with refs::
     table = session.resolve(result)
 
     # Or use phantom.Chat for LLM-driven analysis
-    chat = phantom.Chat(session, provider="anthropic", model="claude-sonnet-4-20250514")
+    chat = phantom.Chat(session, provider="anthropic", model="claude-sonnet-4-6")
     response = chat.ask("Who are the top customers by revenue?")
 """
 
 from importlib.metadata import PackageNotFoundError, version
 
 try:
-    __version__ = version("phantom")
+    __version__ = version("phantom-ai")
 except PackageNotFoundError:
     __version__ = "0.0.0-dev"
 
