@@ -20,6 +20,7 @@ pip install phantom-ai
 ```
 
 ```python
+import os
 import phantom
 
 session = phantom.Session(allowed_dirs=["./data"])
@@ -27,6 +28,7 @@ session = phantom.Session(allowed_dirs=["./data"])
 chat = phantom.Chat(
     session,
     provider="anthropic",
+    api_key=os.environ["ANTHROPIC_API_KEY"],
     model="claude-sonnet-4-20250514",
     system="You are an astrophysicist. Data files are in ./data/.",
 )
@@ -83,21 +85,26 @@ pip install "phantom-ai[google]"
 
 ```python
 chat = phantom.Chat(
-    session, 
-    provider="anthropic", 
-    model="claude-sonnet-4-20250514"
+    session,
+    provider="anthropic",
+    api_key=os.environ["ANTHROPIC_API_KEY"],
+    model="claude-sonnet-4-20250514",
 )
 chat = phantom.Chat(
-    session, 
-    provider="openai", 
-    model="gpt-4o"
+    session,
+    provider="openai",
+    api_key=os.environ["OPENAI_API_KEY"],
+    model="gpt-4o",
 )
 chat = phantom.Chat(
-    session, 
-    provider="google", 
-    model="gemini-2.0-flash"
+    session,
+    provider="google",
+    api_key=os.environ["GOOGLE_API_KEY"],
+    model="gemini-2.0-flash",
 )
 ```
+
+Phantom also honours each SDK's native env var (`ANTHROPIC_API_KEY`, `OPENAI_API_KEY`, `GOOGLE_API_KEY`) when `api_key` is omitted — useful for CI.
 
 Any **OpenAI-compatible** API (Groq, Together, Fireworks, Ollama, vLLM, ...) works via `base_url`:
 

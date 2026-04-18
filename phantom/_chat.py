@@ -60,13 +60,21 @@ class Chat:
         def load_csv(path: str) -> pd.DataFrame:
             return pd.read_csv(path)
 
-        # By name (string)
-        chat = phantom.Chat(session, provider="anthropic")
+        # Pass the API key directly
+        chat = phantom.Chat(
+            session,
+            provider="anthropic",
+            api_key=os.environ["ANTHROPIC_API_KEY"],
+        )
 
-        # Auto-detect from model name
-        chat = phantom.Chat(session, model="gpt-4o")
+        # Auto-detect provider from model name
+        chat = phantom.Chat(
+            session,
+            model="gpt-4o",
+            api_key=os.environ["OPENAI_API_KEY"],
+        )
 
-        # Pre-configured provider instance
+        # Pre-configured provider instance (custom base_url, etc.)
         chat = phantom.Chat(
             session,
             provider=phantom.OpenAIProvider(
@@ -86,6 +94,7 @@ class Chat:
         session: Session,
         *,
         provider: str | LLMProvider | None = None,
+        api_key: str | None = None,
         model: str | None = None,
         system: str = "",
         client: Any | None = None,
@@ -106,10 +115,19 @@ class Chat:
                 ``"openai"``, ``"google"``), a provider
                 instance, or ``None`` to auto-detect from
                 *model* (falls back to ``"anthropic"``).
+            api_key: API key forwarded to the provider. Raises
+                ``TypeError`` if combined with a pre-built
+                ``LLMProvider`` instance — set the key on the
+                provider instead. Ignored when *client* is
+                also set. If omitted, the underlying SDK falls
+                back to its native environment variable
+                (``ANTHROPIC_API_KEY``, ``OPENAI_API_KEY``,
+                ``GOOGLE_API_KEY``).
             model: Model name (defaults per provider).
             system: Developer system prompt appended to
                 Phantom's built-in prompt.
-            client: Pre-configured SDK client.
+            client: Pre-configured SDK client. When set,
+                *api_key* is ignored.
             max_tokens: Maximum tokens per LLM response.
             max_turns: Safety limit on round-trips per ask().
             catch_errors: If True, resolution errors are sent
@@ -124,10 +142,17 @@ class Chat:
         self._session = session
 
         if isinstance(provider, LLMProvider):
+            if api_key is not None:
+                raise TypeError(
+                    "Cannot pass api_key together with a "
+                    "pre-configured provider instance. Set "
+                    "the key on the provider instead: "
+                    "AnthropicProvider(api_key=...)."
+                )
             self._provider = provider
             self._provider_name = type(provider).__name__
         elif isinstance(provider, str):
-            self._provider = get_provider(provider)
+            self._provider = get_provider(provider, api_key=api_key)
             self._provider_name = provider
         elif provider is None:
             inferred = (
@@ -136,7 +161,7 @@ class Chat:
                 else None
             )
             name = inferred or "anthropic"
-            self._provider = get_provider(name)
+            self._provider = get_provider(name, api_key=api_key)
             self._provider_name = name
         else:
             raise TypeError(

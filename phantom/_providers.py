@@ -608,7 +608,7 @@ def _infer_provider(model: str) -> str | None:
 
 # --- Provider registry ---
 
-_PROVIDERS: dict[str, Callable[[], LLMProvider]] = {
+_PROVIDERS: dict[str, Callable[..., LLMProvider]] = {
     "anthropic": AnthropicProvider,
     "openai": OpenAIProvider,
     "google": GoogleProvider,
@@ -616,22 +616,31 @@ _PROVIDERS: dict[str, Callable[[], LLMProvider]] = {
 
 
 def register_provider(
-    name: str, cls: Callable[[], LLMProvider]
+    name: str, cls: Callable[..., LLMProvider]
 ) -> None:
     """Register a custom LLM provider.
 
     Args:
         name: Provider name for use in ``Chat(provider=name)``.
         cls: A class (or factory) producing an ``LLMProvider``.
+            To integrate with ``Chat(api_key=...)``, the class
+            should accept an ``api_key`` keyword argument.
     """
     _PROVIDERS[name] = cls
 
 
-def get_provider(name: str) -> LLMProvider:
+def get_provider(
+    name: str,
+    *,
+    api_key: str | None = None,
+) -> LLMProvider:
     """Get a provider instance by name.
 
     Args:
         name: One of the registered provider names.
+        api_key: Optional API key forwarded to the provider
+            constructor. If ``None``, the underlying SDK falls
+            back to its native environment variable.
 
     Raises:
         ValueError: If the provider name is not registered.
@@ -641,4 +650,7 @@ def get_provider(name: str) -> LLMProvider:
             f"Unknown provider: {name!r}. "
             f"Available: {list(_PROVIDERS.keys())}"
         )
-    return _PROVIDERS[name]()
+    cls = _PROVIDERS[name]
+    if api_key is not None:
+        return cls(api_key=api_key)
+    return cls()
