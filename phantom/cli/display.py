@@ -7,10 +7,12 @@ from collections.abc import Generator
 from contextlib import contextmanager
 from typing import TYPE_CHECKING, Any
 
+from rich import box
 from rich.console import Console
 from rich.markdown import Markdown
 from rich.status import Status
 from rich.syntax import Syntax
+from rich.table import Table
 from rich.text import Text
 
 if TYPE_CHECKING:
@@ -123,7 +125,11 @@ class DisplayManager:
 
         self._resume_spinner()
 
-    def show_tool_result(self, result: ToolResult) -> None:
+    def show_tool_result(
+        self,
+        result: ToolResult,
+        schema: dict[str, Any] | None = None,
+    ) -> None:
         if not self.config.show_tool_calls:
             return
         self._pause_spinner()
@@ -138,6 +144,8 @@ class DisplayManager:
                     (label, "cyan"),
                 )
             )
+            if schema:
+                self._show_schema_table(schema)
         elif result.kind == "peek":
             cols = list(result.data.get("columns", {}).keys())
             rows = result.data.get("row_count")
@@ -167,6 +175,35 @@ class DisplayManager:
 
         self.console.print()
         self._resume_spinner()
+
+    def _show_schema_table(self, schema: dict[str, Any]) -> None:
+        """Render a compact schema table showing column names and types."""
+        columns: dict[str, str] = schema.get("columns", {})
+        if not columns:
+            return
+
+        table = Table(
+            show_header=True,
+            header_style="bold",
+            border_style="dim",
+            box=box.ROUNDED,
+            padding=(0, 1),
+            pad_edge=False,
+        )
+        table.add_column("Column", style="cyan")
+        table.add_column("Type", style="dim")
+
+        for col_name, col_type in columns.items():
+            table.add_row(col_name, col_type)
+
+        row_count = schema.get("row_count")
+        footer = f"{len(columns)} columns"
+        if row_count is not None:
+            footer = f"{row_count:,} rows · {footer}"
+
+        self.console.print()
+        self.console.print(table, justify="left")
+        self.console.print(f"    [dim]{footer}[/dim]")
 
     def show_response(self, response: ChatResponse) -> None:
         self.console.print()

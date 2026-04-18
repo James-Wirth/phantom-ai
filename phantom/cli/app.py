@@ -125,6 +125,8 @@ class PhantomApp:
         except OSError:
             return []
 
+    _SCHEMA_OPS = {"read_csv", "read_parquet", "read_json", "query"}
+
     def _wrap_handle_tool_call(self) -> None:
         """Wrap session.handle_tool_call for tool-call visibility."""
         assert self.session is not None
@@ -133,9 +135,27 @@ class PhantomApp:
         def wrapped(
             name: str, arguments: Any, **kw: Any
         ) -> phantom.ToolResult:
-            self.display.show_tool_call(name, arguments)
+            if name != "peek":
+                self.display.show_tool_call(name, arguments)
             result = original(name, arguments, **kw)
-            self.display.show_tool_result(result)
+
+            schema = None
+            if (
+                result.kind == "ref"
+                and result.ref is not None
+                and name in self._SCHEMA_OPS
+            ):
+                try:
+                    peek_data = self.session.peek(result.ref.id)  # type: ignore[union-attr]
+                    schema = {
+                        "columns": peek_data.get("columns", {}),
+                        "row_count": peek_data.get("row_count"),
+                    }
+                except Exception:
+                    pass
+
+            if name != "peek":
+                self.display.show_tool_result(result, schema=schema)
             return result
 
         self.session.handle_tool_call = wrapped  # type: ignore[assignment]
