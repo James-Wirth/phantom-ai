@@ -13,10 +13,6 @@
 
 Phantom is a Python framework for LLM-assisted data analysis. The LLM doesn't need to see the actual data. Phantom reasons with opaque **semantic references** (`@a3f2`), writes SQL, and executes the queries locally in a sandboxed [DuckDB](https://duckdb.org/) engine.
 
-<p align="center">
-  <img src="https://github.com/James-Wirth/phantom-ai/releases/download/v0.4.2/demo.gif" alt="Phantom CLI demo" width="100%">
-</p>
-
 ## Quick Start
 
 ```bash
